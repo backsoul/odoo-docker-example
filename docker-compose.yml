@@ -1,0 +1,40 @@
+version: "3"
+services:
+  odoo:
+    image: odoo:13
+    restart: always
+    depends_on:
+      - odoo_db
+    volumes:
+      - odoo-web-docker:/var/lib/odoo
+      - ./config/odoo.conf:/etc/odoo/odoo.conf
+      - ./custom:/mnt/custom
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - odoo_database
+      - web
+
+  odoo_db:
+    image: postgres:10
+    # command: postgres -c shared_buffers=800MB
+    ports:
+      - 5432
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_USER: odoo
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo-db-docker:/var/lib/postgresql/data/pgdata
+    networks:
+      - odoo_database
+
+volumes:
+  odoo-db-docker:
+  odoo-web-docker:
+
+networks:
+  web:
+    external: true
+  odoo_database:
+    driver: bridge
